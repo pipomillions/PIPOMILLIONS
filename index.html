@@ -53,6 +53,34 @@ main{max-width:1180px;margin:0 auto;padding:0 24px}
 footer{max-width:1180px;margin:72px auto 0;padding:28px 24px 48px;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 footer p{max-width:60ch}
 
+
+.search{position:relative;margin:0 0 28px;max-width:520px}
+.search input{width:100%;font:inherit;font-size:1rem;padding:15px 18px 15px 48px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--text);box-shadow:var(--shadow);outline:none}
+.search input:focus{border-color:var(--muted)}
+.search svg{position:absolute;left:17px;top:50%;transform:translateY(-50%);width:20px;height:20px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round}
+.empty{color:var(--muted);padding:24px 0}
+.card{cursor:pointer}
+.name a,.img a{color:inherit;text-decoration:none;display:block}
+
+.modal{position:fixed;inset:0;z-index:50;background:rgba(10,10,14,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;animation:fade .2s ease}
+.modal[hidden]{display:none}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.sheet{position:relative;background:var(--surface);border-radius:24px;width:100%;max-width:920px;max-height:92vh;overflow:auto;display:grid;grid-template-columns:1fr 1fr;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.m-img{background:var(--img);aspect-ratio:1/1}
+.m-img img{width:100%;height:100%;object-fit:cover;display:block}
+.m-body{padding:36px 32px;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.m-body h2{font-size:1.7rem;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+.m-body p{color:var(--muted);font-size:1rem}
+.m-body .price{font-size:1.5rem;margin-top:8px}
+.copy{font:inherit;font-weight:600;font-size:.92rem;background:none;border:1px solid var(--line);color:var(--text);padding:12px 16px;border-radius:12px;cursor:pointer}
+.copy:hover{background:var(--bg)}
+.close{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;border:none;background:var(--surface);color:var(--text);font-size:1.6rem;line-height:1;cursor:pointer;box-shadow:var(--shadow);z-index:2}
+.close:focus-visible,.copy:focus-visible{outline:3px solid var(--muted);outline-offset:2px}
+@media(max-width:700px){
+  .sheet{grid-template-columns:1fr;border-radius:20px}
+  .m-body{padding:22px 20px 24px}
+  .m-body h2{font-size:1.4rem}
+}
 @media(max-width:600px){
   .nav{padding:18px 18px}
   .hero{padding:32px 18px 32px}
@@ -76,8 +104,27 @@ footer p{max-width:60ch}
 </section>
 
 <main>
+  <div class="search">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <input id="q" type="search" placeholder="Search products" aria-label="Search products" autocomplete="off">
+  </div>
   <div class="grid" id="grid"></div>
+  <p class="empty" id="empty" hidden>No products found.</p>
 </main>
+
+<div class="modal" id="modal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m-name">
+    <button class="close" id="m-close" aria-label="Close">&times;</button>
+    <div class="m-img"><img id="m-img" alt=""></div>
+    <div class="m-body">
+      <h2 id="m-name"></h2>
+      <p id="m-desc"></p>
+      <div class="price" id="m-price"></div>
+      <a class="buy" id="m-buy" target="_blank" rel="noopener sponsored nofollow">Buy now</a>
+      <button class="copy" id="m-copy" type="button">Copy link to this product</button>
+    </div>
+  </div>
+</div>
 
 <footer>
   <p>As an Amazon Associate I earn from qualifying purchases. The “Buy now” button takes you to a partner store where the purchase is completed. Some links are affiliate links, so we may earn a small commission at no extra cost to you.</p>
@@ -100,23 +147,26 @@ footer p{max-width:60ch}
    ========================================================== */
 const PRODUCTS = [
   {
-    name: "Original Mobile Phone & Gaming Controller Holder, Device Stand, Cable Guys, Licensed Figure",
-    desc: "Iconic Monkeybomb Design: This officially licensed Call of Duty collectible features the legendary Monkey Bomb character rendered as a detailed 8.5 in tall gaming accessory that expresses your passion for the franchise",
-    price: "$20.99",
-    image: "Original Mobile Phone & Gaming Controller Holder, Device Stand, Cable Guys, Licensed Figure.png",
+    name: "First product name",
+    desc: "A short description of the product, one or two sentences.",
+    price: "$29.99",
+    image: "https://picsum.photos/seed/pipo1/700/700",
     link: "https://example.com/affiliate-link-1"
   },
-
-
-
-
-
-
-
-
-
-
-  
+  {
+    name: "Second product name",
+    desc: "A short description of the second product.",
+    price: "$49.00",
+    image: "https://picsum.photos/seed/pipo2/700/700",
+    link: "https://example.com/affiliate-link-2"
+  },
+  {
+    name: "Third product name",
+    desc: "A short description of the third product.",
+    price: "$19.90",
+    image: "https://picsum.photos/seed/pipo3/700/700",
+    link: "https://example.com/affiliate-link-3"
+  },
 
   /* ⬇ NEW PRODUCT: paste a copy of one of the blocks above here */
 
@@ -125,17 +175,81 @@ const PRODUCTS = [
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
-document.getElementById("grid").innerHTML = PRODUCTS.map(p => `
-  <article class="card">
-    <div class="img"><img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy"></div>
+/* Each product gets a link-friendly ID from its name (optional: add id: "my-id" to a product) */
+const slugify = s => String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"") || "product";
+const used = {};
+PRODUCTS.forEach(p => { const b = slugify(p.id || p.name); let s = b, n = 2; while (used[s]) s = b + "-" + n++; used[s] = 1; p._id = s; });
+
+const grid = document.getElementById("grid"), empty = document.getElementById("empty"), q = document.getElementById("q");
+
+function render(list){
+  grid.innerHTML = list.map(p => `
+  <article class="card" data-id="${esc(p._id)}">
+    <div class="img"><a href="#${esc(p._id)}" tabindex="-1" aria-hidden="true"><img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy"></a></div>
     <div class="body">
-      <h2 class="name">${esc(p.name)}</h2>
+      <h2 class="name"><a href="#${esc(p._id)}">${esc(p.name)}</a></h2>
       <p class="desc">${esc(p.desc)}</p>
       <div class="price">${esc(p.price)}</div>
       <a class="buy" href="${esc(p.link)}" target="_blank" rel="noopener sponsored nofollow">Buy now</a>
     </div>
   </article>`).join("");
+  empty.hidden = list.length > 0;
+}
+render(PRODUCTS);
 
+q.addEventListener("input", () => {
+  const t = q.value.trim().toLowerCase();
+  render(!t ? PRODUCTS : PRODUCTS.filter(p => (p.name + " " + p.desc).toLowerCase().includes(t)));
+});
+
+/* Click anywhere on a card (except the Buy button) opens the product */
+grid.addEventListener("click", e => {
+  if (e.target.closest(".buy")) return;
+  const c = e.target.closest(".card");
+  if (c){ e.preventDefault(); location.hash = c.dataset.id; }
+});
+
+/* Popup */
+const modal = document.getElementById("modal");
+function openProduct(p){
+  document.getElementById("m-img").src = p.image;
+  document.getElementById("m-img").alt = p.name;
+  document.getElementById("m-name").textContent = p.name;
+  document.getElementById("m-desc").textContent = p.desc;
+  document.getElementById("m-price").textContent = p.price;
+  document.getElementById("m-buy").href = p.link;
+  document.getElementById("m-copy").textContent = "Copy link to this product";
+  document.title = p.name + " – PIPO BRAND";
+  modal.hidden = false;
+  document.body.style.overflow = "hidden";
+  document.getElementById("m-close").focus();
+}
+function closeModal(){
+  modal.hidden = true;
+  document.body.style.overflow = "";
+  document.title = "PIPO BRAND";
+}
+function route(){
+  const id = decodeURIComponent(location.hash.slice(1));
+  const p = PRODUCTS.find(x => x._id === id);
+  p ? openProduct(p) : closeModal();
+}
+function closeAndClearHash(){
+  history.pushState(null, "", location.pathname + location.search);
+  closeModal();
+}
+window.addEventListener("hashchange", route);
+document.getElementById("m-close").addEventListener("click", closeAndClearHash);
+modal.addEventListener("click", e => { if (e.target === modal) closeAndClearHash(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !modal.hidden) closeAndClearHash(); });
+
+document.getElementById("m-copy").addEventListener("click", async e => {
+  const url = location.origin + location.pathname + location.hash;
+  try { await navigator.clipboard.writeText(url); e.target.textContent = "Link copied!"; }
+  catch(_) { prompt("Copy this link:", url); }
+});
+
+route();
 document.getElementById("year").textContent = new Date().getFullYear();
 </script>
 </body>
